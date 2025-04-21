@@ -1,0 +1,10 @@
+[project]
+name = "amazon-captcha-handler"
+version = "0.1.0"
+description = "Amazon captcha handler"
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "pillow>=11.2.1",
+]

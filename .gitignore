@@ -12,3 +12,4 @@ uv.lock
 
 # Other
 *.code-workspace
+/[TtEeMmPp]*

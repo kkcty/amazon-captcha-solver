@@ -8,9 +8,9 @@ from aiofiles import open as async_open
 from PIL import Image as ImageModule
 
 if TYPE_CHECKING:
-    from typing import Awaitable, Literal, BinaryIO
+    from typing import Awaitable, Literal
 
-    from ..type_hints import Image, StrPath
+    from ..type_hints import BinaryIO, Image, ImageSource, StrPath
 
 
 sync_open = open
@@ -36,18 +36,18 @@ async def read_image(
 @overload
 def read_image(d: StrPath, async_mode: Literal[False], /, *, formats: list[str] | None = None) -> Image: ...
 @overload
+def read_image(d: BinaryIO, async_mode: None = None, /, *, formats: list[str] | None = None) -> Image: ...
+@overload
+def read_image(d: bytes, async_mode: None = None, /, *, formats: list[str] | None = None) -> Image: ...
 def read_image(
-    d: bytes, async_mode: Literal[None] = None, /, *, formats: list[str] | None = None
-) -> Image: ...
-def read_image(
-    d: bytes | StrPath | BinaryIO, async_mode: bool | None = None, /, *, formats: list[str] | None = None
+    d: ImageSource, async_mode: bool | None = None, /, *, formats: list[str] | None = None
 ) -> Image | Awaitable[Image]:
     """
-    read image from file or bytes
+    read image from file, bytes or binary-io
 
-    :param d: image-file or image-bytes
-    :type d: bytes | BinaryIO | str | Path
-    :param async_mode: enable async (file only)
+    :param d: file-path, bytes or binary-io
+    :type d: Path | str | bytes | RawIOBase | BufferedIOBase
+    :param async_mode: enable async (file-path only)
     :type async_mode: bool | None
     :param formats: possible image formats
     :type formats: list[str] | None
@@ -63,11 +63,11 @@ def read_image(
         if async_mode is True:
             return read_image_async(d, formats=formats)
         else:
-            return read_image_sync(d, formats=formats)
+            return ImageModule.open(d, formats=formats)
 
     # if d is binary-io
     if isinstance(d, (RawIOBase, BufferedIOBase)):
-        return ImageModule.open(d)
+        return ImageModule.open(d)  # type: ignore
 
     # if d is bytes
     d = cast(bytes, d)
@@ -80,15 +80,5 @@ async def read_image_async(f: StrPath, /, *, formats: list[str] | None = None) -
 
     async with async_open(f, 'rb') as fp:
         bio = BytesIO(await fp.read())
-
-    return ImageModule.open(bio, formats=formats)
-
-
-def read_image_sync(f: StrPath, /, *, formats: list[str] | None = None) -> Image:
-    """read image from file (sync)"""
-    f = check_file_before_read(f)
-
-    with sync_open(f, 'rb') as fp:
-        bio = BytesIO(fp.read())
 
     return ImageModule.open(bio, formats=formats)

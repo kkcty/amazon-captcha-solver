@@ -5,6 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
+*.ipynb
 uv.lock
 
 # Virtual environments
@@ -12,3 +13,4 @@ uv.lock
 
 # Other
 *.code-workspace
+/[TtEeMmPp]*

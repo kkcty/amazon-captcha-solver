@@ -1,10 +1,21 @@
 [project]
-name = "amazon-captcha-handler"
+name = "amazon-captcha-solver"
+authors = [{ name = "kkcty", email = "jdycty2002@613.com" }]
 version = "0.1.0"
-description = "Amazon captcha handler"
+description = "Amazon captcha Solver"
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
-dependencies = [
-    "aiofiles>=24.1.0",
-    "pillow>=11.2.1",
-]
+dependencies = ["pillow>=11.2.1"]
+
+[dependency-groups]
+dev = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["amazon_captcha_solver"]

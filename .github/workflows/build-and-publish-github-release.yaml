@@ -22,10 +22,10 @@ jobs:
           python-version-file: ".python-version"
 
       - name: setup environment
-        uses: uv sync
+        run: uv sync
 
       - name: build wheel
-        uses: uv build
+        run: uv build
 
       - name: upload release
         uses: softprops/action-gh-release@v1

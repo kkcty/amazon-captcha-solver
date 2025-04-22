@@ -8,3 +8,8 @@ dependencies = [
     "aiofiles>=24.1.0",
     "pillow>=11.2.1",
 ]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+]

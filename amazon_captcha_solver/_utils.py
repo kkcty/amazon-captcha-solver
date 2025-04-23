@@ -24,7 +24,7 @@ def read_image(s: BinaryIO, /, *, formats: list[str] | None = None) -> Image: ..
 @overload
 def read_image(s: bytes, /, *, formats: list[str] | None = None) -> Image: ...
 def read_image(s: ImageSource, /, *, formats: list[str] | None = None) -> Image:
-    """Read image from file, bytes or binary-io."""
+    """Read image from Bytes, File-path or Binary-file-object."""
     # TODO: support image-base64 in future.
 
     # file-path

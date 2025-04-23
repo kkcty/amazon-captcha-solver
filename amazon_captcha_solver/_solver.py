@@ -25,21 +25,12 @@ def solve(source: Image | ImageSource) -> str | None:
         - File-like object
     :type source: Image | ImageSource
 
-    :return: Recognized text in uppercase if successful, None if any character cannot be recognized
+    :return: Recognized text if successful, None if any character cannot be recognized
     :rtype: str | None
-
-    Processing steps:
-    1. Convert input to PIL Image if not already
-    2. Binarize image using monochrome conversion
-    3. Split image into individual letter regions
-    4. Crop borders from each letter image
-    5. Extract features from processed letters
-    6. Predict each letter using extracted features
-    7. Return concatenated result if all letters recognized
     """
     source = source if isinstance(source, Image) else read_image(source)
 
-    # 图片二值化 -> 切分出各个字母 -> 裁剪掉各个字母的边框
+    # Convert to monochrome -> split into letters -> crop letter borders
     croped_letter_images = map(
         crop_border,
         split_letters(
@@ -49,15 +40,15 @@ def solve(source: Image | ImageSource) -> str | None:
         ),
     )
 
-    # 提取每个字母的特征
+    # Extract features from each letter image
     letter_features = map(extract_feature, croped_letter_images)
 
-    # 依次匹配所有字母的特征
+    # Match features against known patterns for all letters
     result: list[str] = list()
     for _ in letter_features:
         predict = predict_one(_)
 
-        # 但凡出现一个无法匹配的字母就返回 None
+        # Return None if any letter fails to match
         if predict is None:
             return None
 

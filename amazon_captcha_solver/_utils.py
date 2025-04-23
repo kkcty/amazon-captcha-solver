@@ -17,19 +17,6 @@ if TYPE_CHECKING:
     type Image = ImageModule.Image
 
 
-def check_file_before_read(f: StrPath, /) -> Path:
-    if isinstance(f, str):
-        f = Path(f)
-
-    if not f.exists():
-        raise FileNotFoundError(f'"{f}" not exist')
-
-    if not f.is_file():
-        raise IsADirectoryError(f'"{f}" is a directory')
-
-    return f
-
-
 @overload
 def read_image(s: StrPath, /, *, formats: list[str] | None = None) -> Image: ...
 @overload
@@ -37,20 +24,10 @@ def read_image(s: BinaryIO, /, *, formats: list[str] | None = None) -> Image: ..
 @overload
 def read_image(s: bytes, /, *, formats: list[str] | None = None) -> Image: ...
 def read_image(s: ImageSource, /, *, formats: list[str] | None = None) -> Image:
-    """
-    read image from file, bytes or binary-io
-
-    :param s: file-path, bytes or binary-io
-    :type s: Path | str | bytes | RawIOBase | BufferedIOBase
-    :param formats: possible image formats
-    :type formats: list[str] | None
-
-    :return: Pillow Image
-    :rtype: Image
-    """
+    """Read image from file, bytes or binary-io."""
     # TODO: support image-base64 in future.
 
-    # if d is file-path
+    # file-path
     if isinstance(s, (str, Path)):
         if isinstance(s, str):
             s = Path(s)
@@ -60,16 +37,16 @@ def read_image(s: ImageSource, /, *, formats: list[str] | None = None) -> Image:
             raise IOError(f'"{s}" is not a file.')
         return ImageModule.open(s, formats=formats)
 
-    # if d is binary-io
+    # binary-io
     if isinstance(s, (RawIOBase, BufferedIOBase)):
         return ImageModule.open(s)  # type: ignore
 
-    # if d is bytes
+    # bytes
     return ImageModule.open(BytesIO(s), formats=formats)
 
 
-def monochrome(img: Image, weight: int = 1, /) -> Image:
-    # 二值化
+def monochrome(img: Image, weight: int, /) -> Image:
+    """Convert image to monochrome using thresholding."""
     return ImageModule.eval(
         img.convert('L'),
         lambda p: 0 if p <= weight else 255,
@@ -77,7 +54,7 @@ def monochrome(img: Image, weight: int = 1, /) -> Image:
 
 
 def merge_horizontally(img1: Image, img2: Image, /) -> Image:
-    """merge two images horizontally."""
+    """Merge two images side by side horizontally."""
     r = ImageModule.new('L', (img1.width + img2.width, img1.height))
     r.paste(img1, (0, 0))
     r.paste(img2, (img1.width, 0))
@@ -85,7 +62,7 @@ def merge_horizontally(img1: Image, img2: Image, /) -> Image:
 
 
 def split_letters(img: Image, /, max_width: int, min_width: int) -> Iterable[Image]:
-    # 从图片中切分出每个字母的子图
+    """Split captcha image into individual letter images."""
     columns = [[(img.getpixel((x, y))) for y in range(img.height)] for x in range(img.width)]
     column_flags = [0 not in _ for _ in columns]
     x_points = [i for i, f in enumerate(column_flags) if not f]
@@ -127,20 +104,23 @@ def split_letters(img: Image, /, max_width: int, min_width: int) -> Iterable[Ima
 
 
 def crop_border(img: Image, /) -> Image:
-    # 裁剪掉字母的边框
+    """Remove white borders from letter image."""
     bg = ImageModule.new(img.mode, img.size, 255)
     diff = ImageChops.difference(img, bg)
     return img.crop(diff.getbbox())
 
 
 def extract_feature(img: Image, /) -> str:
-    # 提取单个字母的特征
+    """Extract compressed feature string from letter image."""
     img_data = ''.join(map(lambda pix: '1' if pix == 0 else '0', img.getdata()))
     return str(zlib.compress(img_data.encode('utf-8')))
 
 
 def predict_one(feature: str) -> str | None:
-    # 预测单个字母
+    """Predict letter from extracted feature using training data."""
     for letter, features in TRAINING_DATA.items():
         if feature in features:
             return letter
+
+    # no matched feature in training_data
+    return None

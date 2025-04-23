@@ -1,7 +1,7 @@
 [project]
 name = "amazon-captcha-solver"
 authors = [{ name = "kkcty", email = "jdycty2002@613.com" }]
-version = "0.1.0"
+version = "1.0.0"
 description = "Amazon captcha Solver"
 readme = "README.md"
 requires-python = ">=3.13,<4.0"

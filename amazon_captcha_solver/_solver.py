@@ -15,7 +15,7 @@ MIN_LETTER_WIDTH = 14
 MONOCHROME_WEIGHT = 1
 
 
-def solve(source: Image | ImageSource) -> str | None:
+def solve(source: Image | ImageSource, /) -> str | None:
     """Solve Amazon captcha and return the recognized text.
 
     :param source: Image source to process. Can be either:
